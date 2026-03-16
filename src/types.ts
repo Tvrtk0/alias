@@ -12,14 +12,17 @@ export interface GameSettings {
   skipPenalty: number
 }
 
+export interface WordResult {
+  wordIndex: number
+  correct: boolean
+}
+
 export interface GameState {
   phase: GamePhase
   teams: Team[]
   activeTeamIndex: number
   settings: GameSettings
-  currentRoundCorrect: number
-  currentRoundSkipped: number
-  usedWordIndices: number[]
+  wordResults: WordResult[]
   currentWordIndex: number
   shuffledIndices: number[]
   activePlayerIndices: number[]
@@ -31,5 +34,6 @@ export type GameAction =
   | { type: 'CORRECT' }
   | { type: 'SKIP' }
   | { type: 'END_TURN' }
+  | { type: 'TOGGLE_WORD'; index: number }
   | { type: 'NEXT_TURN' }
   | { type: 'RESET' }

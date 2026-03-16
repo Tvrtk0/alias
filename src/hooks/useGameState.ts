@@ -8,12 +8,16 @@ const initialState: GameState = {
   teams: [],
   activeTeamIndex: 0,
   settings: { roundTime: 60, targetScore: 50, skipPenalty: -1 },
-  currentRoundCorrect: 0,
-  currentRoundSkipped: 0,
-  usedWordIndices: [],
+  wordResults: [],
   currentWordIndex: 0,
   shuffledIndices: [],
   activePlayerIndices: [],
+}
+
+function calcRoundScore(state: GameState) {
+  const correct = state.wordResults.filter((w) => w.correct).length
+  const skipped = state.wordResults.filter((w) => !w.correct).length
+  return correct + skipped * state.settings.skipPenalty
 }
 
 function gameReducer(state: GameState, action: GameAction): GameState {
@@ -32,7 +36,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     case 'START_TURN': {
-      const { wordIndex, newShuffled, newCurrentIndex } = getNextWord(
+      const { newShuffled, newCurrentIndex } = getNextWord(
         state.shuffledIndices,
         state.currentWordIndex,
         words.length,
@@ -40,71 +44,87 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return {
         ...state,
         phase: 'playing',
-        currentRoundCorrect: 0,
-        currentRoundSkipped: 0,
-        usedWordIndices: [wordIndex],
+        wordResults: [],
         currentWordIndex: newCurrentIndex,
         shuffledIndices: newShuffled ?? state.shuffledIndices,
       }
     }
 
     case 'CORRECT': {
-      const { wordIndex, newShuffled, newCurrentIndex } = getNextWord(
+      // Record current word as correct, draw next word
+      const currentWord = state.shuffledIndices[state.currentWordIndex - 1]
+      const { wordIndex: _next, newShuffled, newCurrentIndex } = getNextWord(
         state.shuffledIndices,
         state.currentWordIndex,
         words.length,
       )
       return {
         ...state,
-        currentRoundCorrect: state.currentRoundCorrect + 1,
-        usedWordIndices: [...state.usedWordIndices, wordIndex],
+        wordResults: [...state.wordResults, { wordIndex: currentWord, correct: true }],
         currentWordIndex: newCurrentIndex,
         shuffledIndices: newShuffled ?? state.shuffledIndices,
       }
     }
 
     case 'SKIP': {
-      const { wordIndex, newShuffled, newCurrentIndex } = getNextWord(
+      const currentWord = state.shuffledIndices[state.currentWordIndex - 1]
+      const { wordIndex: _next, newShuffled, newCurrentIndex } = getNextWord(
         state.shuffledIndices,
         state.currentWordIndex,
         words.length,
       )
       return {
         ...state,
-        currentRoundSkipped: state.currentRoundSkipped + 1,
-        usedWordIndices: [...state.usedWordIndices, wordIndex],
+        wordResults: [...state.wordResults, { wordIndex: currentWord, correct: false }],
         currentWordIndex: newCurrentIndex,
         shuffledIndices: newShuffled ?? state.shuffledIndices,
       }
     }
 
     case 'END_TURN': {
-      const roundScore =
-        state.currentRoundCorrect + state.currentRoundSkipped * state.settings.skipPenalty
+      return {
+        ...state,
+        phase: 'turn-summary',
+      }
+    }
+
+    case 'TOGGLE_WORD': {
+      const wordResults = state.wordResults.map((w, i) =>
+        i === action.index ? { ...w, correct: !w.correct } : w,
+      )
+      return { ...state, wordResults }
+    }
+
+    case 'NEXT_TURN': {
+      // Apply score now (after possible corrections)
+      const roundScore = calcRoundScore(state)
       const updatedTeams = state.teams.map((team, i) =>
         i === state.activeTeamIndex ? { ...team, score: team.score + roundScore } : team,
       )
       const winner = updatedTeams.some((t) => t.score >= state.settings.targetScore)
+
+      if (winner) {
+        return {
+          ...state,
+          phase: 'game-over',
+          teams: updatedTeams,
+        }
+      }
+
       const activeTeam = state.teams[state.activeTeamIndex]
       const newPlayerIndices = [...state.activePlayerIndices]
       if (activeTeam.players.length > 0) {
         newPlayerIndices[state.activeTeamIndex] =
           (newPlayerIndices[state.activeTeamIndex] + 1) % activeTeam.players.length
       }
-      return {
-        ...state,
-        phase: winner ? 'game-over' : 'turn-summary',
-        teams: updatedTeams,
-        activePlayerIndices: newPlayerIndices,
-      }
-    }
 
-    case 'NEXT_TURN': {
       const nextIndex = (state.activeTeamIndex + 1) % state.teams.length
       return {
         ...state,
         phase: 'turn-transition',
+        teams: updatedTeams,
         activeTeamIndex: nextIndex,
+        activePlayerIndices: newPlayerIndices,
       }
     }
 

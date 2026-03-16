@@ -30,9 +30,10 @@ export default function GameScreen() {
     start()
   }, [start])
 
+  // currentWordIndex points to the NEXT word to draw; the word being shown is at index - 1
   const currentWord =
-    state.usedWordIndices.length > 0
-      ? words[state.usedWordIndices[state.usedWordIndices.length - 1]]
+    state.currentWordIndex > 0
+      ? words[state.shuffledIndices[state.currentWordIndex - 1]]
       : ''
 
   const handleCorrect = () => {
@@ -63,7 +64,7 @@ export default function GameScreen() {
           )}
         </div>
         <span className="text-sm text-gray-400">
-          ✓ {state.currentRoundCorrect} &nbsp; ✗ {state.currentRoundSkipped}
+          ✓ {state.wordResults.filter((w) => w.correct).length} &nbsp; ✗ {state.wordResults.filter((w) => !w.correct).length}
         </span>
       </div>
 
