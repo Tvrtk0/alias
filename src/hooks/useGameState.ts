@@ -13,6 +13,7 @@ const initialState: GameState = {
   usedWordIndices: [],
   currentWordIndex: 0,
   shuffledIndices: [],
+  activePlayerIndices: [],
 }
 
 function gameReducer(state: GameState, action: GameAction): GameState {
@@ -26,6 +27,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         settings: action.settings,
         shuffledIndices: shuffled,
         currentWordIndex: 0,
+        activePlayerIndices: action.teams.map(() => 0),
       }
     }
 
@@ -83,10 +85,17 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         i === state.activeTeamIndex ? { ...team, score: team.score + roundScore } : team,
       )
       const winner = updatedTeams.some((t) => t.score >= state.settings.targetScore)
+      const activeTeam = state.teams[state.activeTeamIndex]
+      const newPlayerIndices = [...state.activePlayerIndices]
+      if (activeTeam.players.length > 0) {
+        newPlayerIndices[state.activeTeamIndex] =
+          (newPlayerIndices[state.activeTeamIndex] + 1) % activeTeam.players.length
+      }
       return {
         ...state,
         phase: winner ? 'game-over' : 'turn-summary',
         teams: updatedTeams,
+        activePlayerIndices: newPlayerIndices,
       }
     }
 

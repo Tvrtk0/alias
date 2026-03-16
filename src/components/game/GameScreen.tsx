@@ -48,12 +48,20 @@ export default function GameScreen() {
   }
 
   const activeTeam = state.teams[state.activeTeamIndex]
+  const activePlayer = activeTeam.players.length > 0
+    ? activeTeam.players[state.activePlayerIndices[state.activeTeamIndex]] ?? activeTeam.players[0]
+    : null
 
   return (
     <div className="min-h-dvh flex flex-col px-4 py-6 animate-fade-in">
       {/* Header */}
       <div className="flex justify-between items-center mb-4">
-        <span className="text-primary font-semibold">{activeTeam.name}</span>
+        <div>
+          <span className="text-primary font-semibold">{activeTeam.name}</span>
+          {activePlayer && (
+            <span className="text-gray-400 text-sm ml-2">({activePlayer})</span>
+          )}
+        </div>
         <span className="text-sm text-gray-400">
           ✓ {state.currentRoundCorrect} &nbsp; ✗ {state.currentRoundSkipped}
         </span>

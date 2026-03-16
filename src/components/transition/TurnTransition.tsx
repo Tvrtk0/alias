@@ -12,6 +12,22 @@ export default function TurnTransition() {
         <p className="text-gray-400 text-lg">Pass the device to</p>
         <h1 className="text-5xl font-bold text-primary">{activeTeam.name}</h1>
 
+        {activeTeam.players.length > 0 && (
+          <div className="space-y-2">
+            <p className="text-sm text-gray-500 uppercase tracking-wider">Explaining</p>
+            <p className="text-2xl font-bold text-white">
+              {activeTeam.players[state.activePlayerIndices[state.activeTeamIndex]] ?? activeTeam.players[0]}
+            </p>
+            {activeTeam.players.length > 1 && (
+              <p className="text-gray-400 text-sm">
+                Guessing: {activeTeam.players
+                  .filter((_, i) => i !== state.activePlayerIndices[state.activeTeamIndex])
+                  .join(', ')}
+              </p>
+            )}
+          </div>
+        )}
+
         {/* Current scores */}
         <div className="flex justify-center gap-4 flex-wrap">
           {state.teams.map((team, i) => (

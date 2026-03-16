@@ -2,6 +2,7 @@ export type GamePhase = 'setup' | 'turn-transition' | 'playing' | 'turn-summary'
 
 export interface Team {
   name: string
+  players: string[]
   score: number
 }
 
@@ -21,6 +22,7 @@ export interface GameState {
   usedWordIndices: number[]
   currentWordIndex: number
   shuffledIndices: number[]
+  activePlayerIndices: number[]
 }
 
 export type GameAction =
