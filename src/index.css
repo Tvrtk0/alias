@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #0d9488;
+  --color-primary-dark: #0f766e;
+  --color-primary-light: #5eead4;
+  --color-danger: #ef4444;
+  --color-danger-dark: #dc2626;
+  --color-warning: #f59e0b;
+  --color-success: #22c55e;
+  --color-surface: #1e293b;
+  --color-surface-light: #334155;
+  --color-bg: #0f172a;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  @apply bg-bg text-white min-h-dvh font-sans;
+  margin: 0;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-in {
+  from { opacity: 0; transform: translateX(40px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pulse-score {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
+@keyframes celebration {
+  0% { transform: scale(0.8) rotate(-5deg); opacity: 0; }
+  50% { transform: scale(1.05) rotate(2deg); }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+.animate-slide-in {
+  animation: slide-in 0.25s ease-out;
+}
+
+.animate-pulse-score {
+  animation: pulse-score 0.4s ease-in-out;
+}
+
+.animate-celebration {
+  animation: celebration 0.6s ease-out;
+}
