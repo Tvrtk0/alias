@@ -37,3 +37,10 @@ export type GameAction =
   | { type: 'TOGGLE_WORD'; index: number }
   | { type: 'NEXT_TURN' }
   | { type: 'RESET' }
+
+export interface GameStats {
+  gamesPlayed: number
+  wins: Record<string, number>
+  bestRound: { team: string; score: number; date: string } | null
+  recentGames: Array<{ date: string; teams: string[]; scores: number[]; winner: string }>
+}

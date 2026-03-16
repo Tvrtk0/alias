@@ -43,6 +43,20 @@ body {
   100% { transform: scale(1) rotate(0deg); opacity: 1; }
 }
 
+@keyframes countdown-pop {
+  0% { transform: scale(0.5); opacity: 0; }
+  40% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); opacity: 0; }
+}
+
+@keyframes swipe-right {
+  to { transform: translateX(120%) rotate(10deg); opacity: 0; }
+}
+
+@keyframes swipe-left {
+  to { transform: translateX(-120%) rotate(-10deg); opacity: 0; }
+}
+
 .animate-fade-in {
   animation: fade-in 0.3s ease-out;
 }
@@ -57,4 +71,18 @@ body {
 
 .animate-celebration {
   animation: celebration 0.6s ease-out;
+}
+
+.animate-countdown {
+  animation: countdown-pop 0.8s ease-out forwards;
+}
+
+.animate-swipe-right {
+  animation: swipe-right 0.2s ease-in forwards;
+  background-color: #22c55e33;
+}
+
+.animate-swipe-left {
+  animation: swipe-left 0.2s ease-in forwards;
+  background-color: #ef444433;
 }

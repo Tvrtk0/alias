@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useGame } from '../../context/GameContext'
 import { playSound } from '../../lib/sounds'
+import { saveGameResult } from '../../lib/stats'
 import PageContainer from '../layout/PageContainer'
 import Button from '../ui/Button'
 
@@ -11,6 +12,10 @@ export default function GameOver() {
 
   useEffect(() => {
     playSound('victory')
+    saveGameResult(
+      state.teams.map((t) => ({ name: t.name, score: t.score })),
+      winner.name,
+    )
   }, [])
 
   return (

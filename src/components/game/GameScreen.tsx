@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { useGame } from '../../context/GameContext'
 import { useTimer } from '../../hooks/useTimer'
 import { playSound } from '../../lib/sounds'
@@ -7,9 +7,14 @@ import Timer from './Timer'
 import WordCard from './WordCard'
 import ActionButtons from './ActionButtons'
 
+type SwipeDirection = 'left' | 'right' | null
+
 export default function GameScreen() {
   const { state, dispatch } = useGame()
   const hasEnded = useRef(false)
+  const [countdown, setCountdown] = useState(3)
+  const [swipeDir, setSwipeDir] = useState<SwipeDirection>(null)
+  const touchStart = useRef<{ x: number; y: number } | null>(null)
 
   const { secondsLeft, isRunning, start } = useTimer(
     state.settings.roundTime,
@@ -25,33 +30,82 @@ export default function GameScreen() {
     },
   )
 
+  // Countdown before round
   useEffect(() => {
     hasEnded.current = false
-    start()
-  }, [start])
+    if (countdown <= 0) return
 
-  // currentWordIndex points to the NEXT word to draw; the word being shown is at index - 1
+    playSound('countdown')
+    const timer = setTimeout(() => {
+      setCountdown((c) => c - 1)
+    }, 800)
+    return () => clearTimeout(timer)
+  }, [countdown])
+
+  // Start game timer after countdown
+  useEffect(() => {
+    if (countdown === 0) {
+      start()
+    }
+  }, [countdown, start])
+
   const currentWord =
     state.currentWordIndex > 0
       ? words[state.shuffledIndices[state.currentWordIndex - 1]]
       : ''
 
-  const handleCorrect = () => {
-    if (!isRunning) return
+  const handleCorrect = useCallback(() => {
+    if (!isRunning || countdown > 0) return
     playSound('correct')
     dispatch({ type: 'CORRECT' })
-  }
+  }, [isRunning, countdown, dispatch])
 
-  const handleSkip = () => {
-    if (!isRunning) return
+  const handleSkip = useCallback(() => {
+    if (!isRunning || countdown > 0) return
     playSound('skip')
     dispatch({ type: 'SKIP' })
+  }, [isRunning, countdown, dispatch])
+
+  // Swipe handlers
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const touch = e.touches[0]
+    touchStart.current = { x: touch.clientX, y: touch.clientY }
+  }
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!touchStart.current) return
+    const touch = e.changedTouches[0]
+    const deltaX = touch.clientX - touchStart.current.x
+    const deltaY = Math.abs(touch.clientY - touchStart.current.y)
+    touchStart.current = null
+
+    // Only trigger if horizontal swipe is dominant and > 80px
+    if (Math.abs(deltaX) > 80 && deltaY < Math.abs(deltaX)) {
+      if (deltaX > 0) {
+        setSwipeDir('right')
+        setTimeout(() => { handleCorrect(); setSwipeDir(null) }, 200)
+      } else {
+        setSwipeDir('left')
+        setTimeout(() => { handleSkip(); setSwipeDir(null) }, 200)
+      }
+    }
   }
 
   const activeTeam = state.teams[state.activeTeamIndex]
   const activePlayer = activeTeam.players.length > 0
     ? activeTeam.players[state.activePlayerIndices[state.activeTeamIndex]] ?? activeTeam.players[0]
     : null
+
+  // Countdown overlay
+  if (countdown > 0) {
+    return (
+      <div className="min-h-dvh flex items-center justify-center">
+        <span key={countdown} className="text-8xl font-black text-primary animate-countdown">
+          {countdown}
+        </span>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-dvh flex flex-col px-4 py-6 animate-fade-in">
@@ -71,10 +125,14 @@ export default function GameScreen() {
       {/* Timer */}
       <Timer secondsLeft={secondsLeft} total={state.settings.roundTime} />
 
-      {/* Word */}
-      <div className="flex-1 flex items-center justify-center my-6">
+      {/* Word — swipeable area */}
+      <div
+        className="flex-1 flex items-center justify-center my-6"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
         <div className="w-full max-w-sm">
-          <WordCard word={currentWord} />
+          <WordCard word={currentWord} swipeDir={swipeDir} />
         </div>
       </div>
 

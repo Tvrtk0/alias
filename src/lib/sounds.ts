@@ -1,12 +1,12 @@
 const soundCache = new Map<string, HTMLAudioElement>()
 let audioUnlocked = false
 
-const SOUND_FILES = ['correct', 'skip', 'tick', 'time-up', 'victory'] as const
+const SOUND_FILES = ['correct', 'skip', 'tick', 'time-up', 'victory', 'countdown'] as const
 export type SoundName = (typeof SOUND_FILES)[number]
 
 export function preloadSounds() {
   for (const name of SOUND_FILES) {
-    const audio = new Audio(`/sounds/${name}.mp3`)
+    const audio = new Audio(`${import.meta.env.BASE_URL}sounds/${name}.mp3`)
     audio.preload = 'auto'
     soundCache.set(name, audio)
   }

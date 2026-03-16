@@ -12,9 +12,13 @@ interface TeamSetup {
   players: string[]
 }
 
+interface SetupScreenProps {
+  onShowStats: () => void
+}
+
 const makeTeam = (): TeamSetup => ({ name: '', players: ['', ''] })
 
-export default function SetupScreen() {
+export default function SetupScreen({ onShowStats }: SetupScreenProps) {
   const { dispatch } = useGame()
   const [teams, setTeams] = useState<TeamSetup[]>([makeTeam(), makeTeam()])
   const [roundTime, setRoundTime] = useState(60)
@@ -204,6 +208,13 @@ export default function SetupScreen() {
         <Button onClick={startGame} size="lg" className="w-full">
           Start game
         </Button>
+
+        <button
+          onClick={onShowStats}
+          className="w-full text-center text-gray-400 hover:text-white text-sm cursor-pointer py-2"
+        >
+          View statistics
+        </button>
       </div>
     </PageContainer>
   )

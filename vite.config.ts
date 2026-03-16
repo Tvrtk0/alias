@@ -1,8 +1,46 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
   base: '/alias/',
-  plugins: [react(), tailwindcss()],
+  plugins: [
+    react(),
+    tailwindcss(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      manifest: {
+        name: 'Alias - Word Party Game',
+        short_name: 'Alias',
+        description: 'A fun word-guessing party game',
+        theme_color: '#0f172a',
+        background_color: '#0f172a',
+        display: 'standalone',
+        scope: '/alias/',
+        start_url: '/alias/',
+        icons: [
+          {
+            src: 'icons/icon-192.png',
+            sizes: '192x192',
+            type: 'image/png',
+          },
+          {
+            src: 'icons/icon-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+          },
+          {
+            src: 'icons/icon-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable',
+          },
+        ],
+      },
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,png,mp3,json}'],
+      },
+    }),
+  ],
 })
